@@ -1,0 +1,7 @@
+{
+  "name": "ionic-toilet-finder",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
