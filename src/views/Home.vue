@@ -7,6 +7,16 @@
         </ion-buttons>
         <ion-title>Toilet Finder</ion-title>
       </ion-toolbar>
+
+        <!-- Info Banner during Itinerary -->
+        <div v-if="itineraryTarget" class="itinerary-banner">
+            <div class="itinerary-info">
+                <span>Navigating to: <strong>{{ itineraryTarget.name }}</strong></span>
+                <ion-button size="small" fill="clear" color="light" @click="itineraryTarget = null">
+                    <ion-icon name="close-circle"></ion-icon> Cancel
+                </ion-button>
+            </div>
+        </div>
     </ion-header>
     
     <ion-content :fullscreen="true">
@@ -38,15 +48,7 @@
             />
         </ion-modal>
         
-        <!-- Info Banner during Itinerary -->
-        <div v-if="itineraryTarget" class="itinerary-banner">
-            <div class="itinerary-info">
-                <span>Navigating to: <strong>{{ itineraryTarget.name }}</strong></span>
-                <ion-button size="small" fill="clear" color="light" @click="itineraryTarget = null">
-                    <ion-icon name="close-circle"></ion-icon> Cancel
-                </ion-button>
-            </div>
-        </div>
+
 
     </ion-content>
   </ion-page>
@@ -126,20 +128,12 @@ const handleStartItinerary = (toilet: any) => {
 }
 
 .itinerary-banner {
-    position: absolute;
-    bottom: 0px; 
-    left: 0; 
-    right: 0;
+    position: relative; /* Normal flow in header */
+    width: 100%;
     background: var(--ion-color-primary);
     color: white;
     padding: 10px;
-    z-index: 99999; /* Above modal if possible, or we adjust modal */
-    /* Note: Ion Modal sits very high in z-index. 
-       Usually we'd put this inside the modal or ensure it's above. 
-       If IonModal is backdrop-less, we can overlay. 
-       Actually, `ion-modal` usually covers everything. 
-       Using `slot="fixed"` on content might help.
-    */
+    z-index: 1000;
 }
 /* To make the banner appear above the map but below the drawer when drawer is high,
    or effectively, we just want it to be visible. 

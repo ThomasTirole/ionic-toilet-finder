@@ -99,21 +99,37 @@ watch(() => props.selectedToilet, (toilet) => {
     }
 });
 
-watch(() => props.itineraryTarget, (target) => {
+watch(() => props.itineraryTarget, async (target) => {
     if (map && props.userLocation && target) {
         if (routePolyline) {
             map.removeLayer(routePolyline);
         }
         
-        // Simple straight line for "itinerary" as requested 
-        // (Real routing requires OSRM API or similar)
-        const latlngs = [
-            [props.userLocation.lat, props.userLocation.lng],
-            [target.lat, target.lng]
-        ];
-        
-        routePolyline = L.polyline(latlngs as L.LatLngExpression[], {color: 'blue', dashArray: '10, 10', weight: 4}).addTo(map);
-        map.fitBounds(routePolyline.getBounds(), { padding: [50, 50] });
+        try {
+            // Fetch route from OSRM
+            const response = await fetch(`http://router.project-osrm.org/route/v1/walking/${props.userLocation.lng},${props.userLocation.lat};${target.lng},${target.lat}?overview=full&geometries=geojson`);
+            const data = await response.json();
+
+            if (data.routes && data.routes.length > 0) {
+                const coordinates = data.routes[0].geometry.coordinates.map((coord: number[]) => [coord[1], coord[0]]);
+                
+                routePolyline = L.polyline(coordinates, {color: 'blue', weight: 4}).addTo(map);
+                map.fitBounds(routePolyline.getBounds(), { padding: [50, 50] });
+            } else {
+                 throw new Error('No route found');
+            }
+        } catch (e) {
+            console.error('Routing failed, falling back to straight line', e);
+             // Fallback to straight line
+            const latlngs = [
+                [props.userLocation.lat, props.userLocation.lng],
+                [target.lat, target.lng]
+            ];
+            
+            routePolyline = L.polyline(latlngs as L.LatLngExpression[], {color: 'blue', dashArray: '10, 10', weight: 4}).addTo(map);
+            map.fitBounds(routePolyline.getBounds(), { padding: [50, 50] });
+        }
+
     } else if (routePolyline && !target) {
         map?.removeLayer(routePolyline);
     }
